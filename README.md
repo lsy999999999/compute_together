@@ -7,8 +7,8 @@
 
 - naive 串行 CSR SpMV；
 - `std::thread` 的连续行分块并行实现；
-- 四个 OpenMP 策略：按行 static、按行 dynamic(128)、
-  静态 NNZ 切块加 SIMD、动态 NNZ 小块加 SIMD；
+- 两个对照用按行 OpenMP 基线：`spmv_omp_row_static` (static)、`spmv_omp_row_dynamic` (dynamic,128)；
+- 两个正式作业入口：`spmv_omp_student_1`（固定 NNZ 切块 + SIMD）、`spmv_omp_student_2`（动态 NNZ 小块 + SIMD）；
 - 结果正确性校验器；
 - 简单的重复计时和命令行参数。
 
@@ -25,8 +25,9 @@ NNZ 策略的对照实验、消融测试和复现命令见
 [experiments/README.md](experiments/README.md)。
 
 ## 实验入口
-请实现
-`spmv_omp_student_1`, `spmv_omp_student_2`两种不同的自定义openmp并行策略，并分析两种策略性能差别原因。
+课程要求实现 `spmv_omp_student_1` 和 `spmv_omp_student_2` 两种不同的自定义策略。这里将优化效果更好的两种 NNZ 方法放进正式入口，原按行 static/dynamic 保留为对照基线。
+
+**当前映射：** `student1` = 固定 NNZ 切块 + SIMD（原 student3）；`student2` = 动态 NNZ 小块 + SIMD（原 student4）。历史测量数值保持不变。报告 Markdown / LaTeX / CSV 已同步更名，但 PDF 与生成图像需重新构建。
 
 如果有其他你觉得有趣有价值的并行策略，也可以继续注册`spmv_omp_student_3`等函数，但`spmv_omp_student`的函数数量不得超过5个（上限为`spmv_omp_student_5`），超过5个的部分将不会被检查。**作业成绩与额外注册函数的数量无关**。
 
@@ -38,3 +39,10 @@ NNZ 策略的对照实验、消融测试和复现命令见
   --normal-nnz 16 --long-rows 16 --long-nnz 80000 \
   --threads 16 --repeats 20
 ```
+
+## 提交前核对
+
+- 编译运行 `csr_spmv_lab.cpp`，确认 OpenMP 1 / OpenMP 2 都通过正确性检查。
+- 使用 `python3 report/make_figures.py` 更新两张图，再使用 `bash report/build_pdf.sh` 重建 PDF；**仓库当前 PDF 与图仍为旧编号，不可直接提交**。
+- 补做课程要求的 Linux `perf stat` 测量；由学生完成个人心路历程报告及必要的 AI 对话截图。
+- 旧 `test_chunks.sh` 和 `compare_schedules.py` 已禁用：固定 `schedule(dynamic,128)` 不受 `OMP_SCHEDULE` 控制。

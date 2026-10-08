@@ -165,19 +165,19 @@ NNZ 划分能否拆开长行，以及更细的动态 NNZ 块是否值得额外�
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-student1 & 按行 \texttt{schedule(static)} & 否 & 否 \\
-student2 & 按行 \texttt{schedule(dynamic,128)} & 否 & 否 \\
-student3 & 每个实际线程固定一个连续 NNZ 块 & 是 & 是 \\
-student4 & 约每个请求线程 4 个 NNZ 块，\texttt{dynamic,1} & 是 & 是 \\
+row_static & 按行 \texttt{schedule(static)} & 否 & 否 \\
+row_dynamic & 按行 \texttt{schedule(dynamic,128)} & 否 & 否 \\
+student1 & 每个实际线程固定一个连续 NNZ 块 & 是 & 是 \\
+student2 & 约每个请求线程 4 个 NNZ 块，\texttt{dynamic,1} & 是 & 是 \\
 \end{longtable}
 
-\texttt{student1} 开销小，但长行可能集中在某个线程；\texttt{student2}
+\texttt{row_static} 开销小，但长行可能集中在某个线程；\texttt{row_dynamic}
 动态领取 128
-行一组的任务，兼顾均衡与领取开销，但仍无法拆开单条长行。\texttt{student3}
+行一组的任务，兼顾均衡与领取开销，但仍无法拆开单条长行。\texttt{student1}
 将非零数组均分为 \(P\) 个区间，每线程自行通过 \texttt{upper\_bound}
 找到对应行；完整行直接写输出，边界行先保存部分和，退出并行区后按块编号合并。每块至多记录两个边界行，因此无需对每个乘加使用原子操作。
 
-\texttt{student4} 延用相同计算与合并代码，将块数增至约
+\texttt{student2} 延用相同计算与合并代码，将块数增至约
 \(4P\)，使先完成的线程可以继续领块。这里 \texttt{dynamic,1} 的一个任务是
 NNZ 块，而不是一行；请求 8 线程时，默认矩阵约分成 32 块，每块约 3 万
 NNZ。NNZ 很少时限制块数，全空矩阵保留一个块。
@@ -229,16 +229,16 @@ OpenMP 的回退运行均通过。拆行与 SIMD
 \endlastfoot
 serial & 0.6689 & 1.00 & 不适用 \\
 std::thread & 0.2400 & 2.79 & 34.8\% \\
-student1 & 0.1805 & 3.71 & 46.3\% \\
-student2 & 0.1761 & 3.80 & 47.5\% \\
-student3 & 0.1629 & 4.11 & 51.3\% \\
-student4 & 0.1407 & 4.75 & 59.4\% \\
+row_static & 0.1805 & 3.71 & 46.3\% \\
+row_dynamic & 0.1761 & 3.80 & 47.5\% \\
+student1 & 0.1629 & 4.11 & 51.3\% \\
+student2 & 0.1407 & 4.75 & 59.4\% \\
 \end{longtable}
 
-\texttt{student2} 相对 \texttt{student1} 改善约
+\texttt{row_dynamic} 相对 \texttt{row_static} 改善约
 2.4\%，本次配置中收益有限；NNZ 固定块加入拆行及 SIMD
-后进一步改善。\texttt{student4} 比 \texttt{student3} 耗时降低
-\textbf{13.6\%}，比 \texttt{student2} 降低
+后进一步改善。\texttt{student2} 比 \texttt{student1} 耗时降低
+\textbf{13.6\%}，比 \texttt{row_dynamic} 降低
 \textbf{20.1\%}。这些是同一次统一测量的结果，不与早期优化数据混算。
 
 \begin{longtable}[]{@{}
@@ -251,13 +251,13 @@ student4 & 0.1407 & 4.75 & 59.4\% \\
 \begin{minipage}[b]{\linewidth}\raggedleft
 线程数 \(P\)
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
-student3 时间
+student1 时间
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
-student4 时间
+student2 时间
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
-student4 加速比
+student2 加速比
 \end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
-student4 效率
+student2 效率
 \end{minipage} \\
 \midrule\noalign{}
 \endhead
@@ -277,15 +277,15 @@ student4 效率
 SIMD，低线程数效率超过 100\% 不等于线程调度实现了超线性扩展。}
 \end{figure}
 
-\texttt{student3} 从 4 扩至 8、10 线程反而变慢；\texttt{student4}
+\texttt{student1} 从 4 扩至 8、10 线程反而变慢；\texttt{student2}
 能继续小幅改善，但 8 到 10 线程的收益仅约 1.1\%，效率明显下降。SIMD
 策略在单线程下也快于原串行，故上述效率不能仅用于评价线程扩展能力。若以
-\texttt{student4} 自身单线程时间为参照，其 10 线程扩展比为
+\texttt{student2} 自身单线程时间为参照，其 10 线程扩展比为
 \textbf{3.66}，相应效率约 \textbf{36.6\%}。
 
 两种线程 API 都适合按行独立计算。当前 \texttt{std::thread}
 基线每次调用都创建并回收线程，OpenMP
-运行时通常可复用工作线程，因而短任务开销不同；\texttt{student4}
+运行时通常可复用工作线程，因而短任务开销不同；\texttt{student2}
 比该基线快约 \textbf{41.4\%}，但这同时包含工作划分与 SIMD
 的影响，不能全部归因于线程复用。OpenMP
 简化循环调度；自定义线程池、任务队列、线程间通信及线程生命周期控制则更适合采用
@@ -302,7 +302,7 @@ NNZ；B：无长行，其余默认；C：20000 行、200000 列、普通行 16 N
 
 \begin{longtable}[]{@{}lrrrr@{}}
 \toprule\noalign{}
-配置 & student1 & student2 & student3 & student4 \\
+配置 & row_static & row_dynamic & student1 & student2 \\
 \midrule\noalign{}
 \endhead
 \bottomrule\noalign{}
@@ -315,11 +315,11 @@ E：seed=42 & 0.2081 & 0.1738 & 0.1698 & 0.1437 \\
 \end{longtable}
 
 A 中按行策略无法协同处理唯一长行，NNZ
-拆分优势突出；但细分动态块的收益不足以抵消开销，\texttt{student4} 比
-\texttt{student3} 慢约 \textbf{4.8\%}，是负优化案例。默认 4
+拆分优势突出；但细分动态块的收益不足以抵消开销，\texttt{student2} 比
+\texttt{student1} 慢约 \textbf{4.8\%}，是负优化案例。默认 4
 线程下也存在类似现象。B
-中策略差距很小，均匀短行没有明显的负载均衡需求。C 中 \texttt{student4}
-比 \texttt{student3} 快 \textbf{12.4\%}；C
+中策略差距很小，均匀短行没有明显的负载均衡需求。C 中 \texttt{student2}
+比 \texttt{student1} 快 \textbf{12.4\%}；C
 同时改变规模和偏斜，只作为组合压力测试，不用于隔离某一变量的贡献。D/E
 中该收益约为
 \textbf{19.6\%/15.4\%}，说明改善不只出现在默认种子，但不能据此推广到任意稀疏矩阵。
@@ -373,7 +373,7 @@ Linux 上应对纯串行、原始 \texttt{std::thread} 和一个 OpenMP
 对强偏斜输入更有效；动态小块进一步改善了默认 8
 线程及组合压力配置，但在低线程数、任务较小或已有负载均衡时可能负优化。最终保留四种策略以展示这些权衡。
 
-默认矩阵中 \texttt{student4} 达到 0.1407 ms（8
+默认矩阵中 \texttt{student2} 达到 0.1407 ms（8
 线程），相对固定纯串行基线为 4.75 倍加速；增加至 10 线程达到 0.1392
 ms，加速 4.81 倍，但边际收益很小。当前均分模型只考虑
 NNZ，没有包含每行固定开销；随机读取
@@ -392,12 +392,12 @@ NNZ，没有包含每行固定开销；随机读取
 \texttt{report/measure\_report.py}，原始与汇总数据为
 \texttt{report/measurements\_raw.csv}、\texttt{report/measurements\_summary.csv}。NNZ
 调度消融数据位于 \texttt{experiments/nnz\_schedules\_*.csv}，早期 SIMD
-消融见 \texttt{student3\_optimization.md}，数据备份在
+消融见 \texttt{student1\_optimization.md}，数据备份在
 \texttt{report/supplement/}。最小值与最大值保留在
 CSV，核心结论已在正文给出。
 
-学生完成 \texttt{student1}、\texttt{student2} 及初版
-\texttt{student3}；OpenAI Codex 协助后续 NNZ
+学生完成 \texttt{row_static}、\texttt{row_dynamic} 及初版
+\texttt{student1}；OpenAI Codex 协助后续 NNZ
 优化设计、实现、验证、实验脚本、图表及本报告初稿。正式提交前由学生核实数据、代码和结论，并按要求附相关对话截图。心路历程报告另由学生本人撰写，本文不代写该部分。
 
 参考资料：
@@ -426,9 +426,9 @@ CSV，核心结论已在正文给出。
 \section{附录
 A：正确性证据与复现}\label{ux9644ux5f55-aux6b63ux786eux6027ux8bc1ux636eux4e0eux590dux73b0}
 
-下面为学生已有的早期 \texttt{student1}/\texttt{student2}
+下面为学生已有的早期 \texttt{row_static}/\texttt{row_dynamic}
 运行截图。截图时间属于早期探索，不参与正文最终版本的定量比较，也不作为
-\texttt{student3}/\texttt{student4} 的验证证据。
+\texttt{student1}/\texttt{student2} 的验证证据。
 
 \begin{figure}
 \centering

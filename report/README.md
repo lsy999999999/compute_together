@@ -27,3 +27,7 @@ MPLCONFIGDIR=/private/tmp/spmv_report_mpl \
 ```
 
 重新测量正文数据的完整命令见报告附录；重测会更新本目录的测量 CSV。NNZ 调度消融复现命令见 `../experiments/README.md`。
+
+## 提交前同步事项（2026-10-08）
+
+现已将原 student3 / student4 改为正式 student1 / student2，原 student1 / student2 改称 row_static / row_dynamic 基线。Markdown、LaTeX 和结构化 CSV 已同步更名，但**当前 experiment_report.pdf 以及 assets 中生成的图仍为旧编号**。必须先运行 `python3 report/make_figures.py`、再运行 `bash report/build_pdf.sh`，核对 PDF 图例与代码入口一致，才可提交。历史 student3 优化记录及 pilot CSV 保持当时命名。

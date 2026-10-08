@@ -1,3 +1,6 @@
+# Archived: schedule(dynamic,128) ignores OMP_SCHEDULE.
+raise SystemExit('Deprecated: fixed dynamic,128 schedule ignores OMP_SCHEDULE; use the NNZ ablation driver instead.')
+
 import subprocess
 import os
 import re

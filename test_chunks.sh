@@ -1,4 +1,7 @@
 #!/bin/bash
+# Archived: schedule(dynamic,128) ignores OMP_SCHEDULE.
+echo 'Deprecated: varying OMP_SCHEDULE cannot vary the compiled dynamic,128 schedule.' >&2
+exit 2
 
 THREADS=8
 REPEATS=100

@@ -1,3 +1,5 @@
+> **历史版本说明**：本文仍使用入口更名前的名称：`student3` 是今天的 `spmv_omp_student_1`（固定 NNZ 分块），`student4` 是今天的 `spmv_omp_student_2`（动态 NNZ 小块）。历史 CSV 文件名不变。
+
 # student3 优化说明
 
 这是代码设计和实测记录，供理解实现及核实实验数据使用。
@@ -10,7 +12,7 @@
 
 ## 新策略如何工作
 
-实现位于 `csr_spmv_lab.cpp` 的 `spmv_omp_student_3`。`student1` 和 `student2` 的实现保持原样。
+实现位于 `csr_spmv_lab.cpp` 的 `spmv_omp_student_1`。`student1` 和 `student2` 的实现保持原样。
 
 线程 `t` 自己计算 NNZ 区间，不需要先集中计算边界：
 

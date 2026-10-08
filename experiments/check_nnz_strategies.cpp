@@ -27,7 +27,7 @@ static void verify(const std::vector<int>& lengths, unsigned seed) {
         for (int call = 0; call < 3; ++call) {
             const auto x = make_vector(matrix.cols, seed + call);
             spmv_serial(matrix, x, expected);
-            for (Fn strategy : {spmv_omp_student_3, spmv_omp_student_4}) {
+            for (Fn strategy : {spmv_omp_student_1, spmv_omp_student_2}) {
                 std::fill(y.begin(), y.end(), std::numeric_limits<double>::quiet_NaN());
                 strategy(matrix, x, y);
                 for (double v : y) {

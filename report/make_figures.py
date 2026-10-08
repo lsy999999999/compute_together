@@ -23,10 +23,10 @@ def main():
     threads = np.array([1, 2, 4, 8, 10])
     baseline = float(data[("default_t1", "serial")]["median_ms"])
     styles = [("std_thread", "std::thread", "#64748b", "o"),
-              ("student1", "student1", "#2563eb", "s"),
-              ("student2", "student2", "#d97706", "^"),
-              ("student3", "student3", "#15803d", "D"),
-              ("student4", "student4", "#be123c", "o")]
+              ("row_static", "row_static", "#2563eb", "s"),
+              ("row_dynamic", "row_dynamic", "#d97706", "^"),
+              ("student1", "student1", "#15803d", "D"),
+              ("student2", "student2", "#be123c", "o")]
     fig, axes = plt.subplots(1, 2, figsize=(7.1, 2.45), layout="constrained")
     for strategy, label, color, marker in styles:
         times = np.array([float(data[(f"default_t{t}", strategy)]["median_ms"])
@@ -50,7 +50,7 @@ def main():
     plt.close(fig)
 
     controls = load(ROOT.parent / "experiments/nnz_schedules_summary.csv")
-    names = ["student3", "static_blocks4", "dynamic_blocks2", "student4",
+    names = ["student1", "static_blocks4", "dynamic_blocks2", "student2",
              "dynamic_blocks8", "dynamic_blocks16"]
     labels = ["Fixed\n8 blocks", "Static\n32 blocks", "Dynamic\n16 blocks",
               "Dynamic\n32 blocks", "Dynamic\n64 blocks", "Dynamic\n128 blocks"]

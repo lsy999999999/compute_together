@@ -413,10 +413,10 @@ int main(int argc, char** argv) {
         std::cout << std::fixed << std::setprecision(3)
                   << "serial                  " << serial_ms << " ms\n"
                   << "std::thread             " << thread_ms << " ms\n"
-                  << "OpenMP row static       " << openmp_1_ms << " ms\n"
-                  << "OpenMP row dynamic      " << openmp_2_ms << " ms\n"
                   << "OpenMP 1 NNZ-fixed SIMD " << openmp_3_ms << " ms\n"
                   << "OpenMP 2 NNZ-dynamic    " << openmp_4_ms << " ms\n"
+                  << "OpenMP row static       " << openmp_1_ms << " ms\n"
+                  << "OpenMP row dynamic      " << openmp_2_ms << " ms\n"
                   << "All correctness checks passed.\n";
     } catch (const std::exception& error) {
         std::cerr << "error: " << error.what() << '\n';

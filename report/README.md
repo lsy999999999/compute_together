@@ -39,3 +39,14 @@ bash report/run_perf.sh 8 10000 5
 ```
 
 按 `serial`、`std_thread`、`student1`、`student2`、`student3`、`student4` 分别运行，输出在 `report/perf/`。性能计数器测量整个独立程序；为减小矩阵生成和启动时间的占比，正式计数期间会重复调用同一个 SpMV 内核。不要把它误写为精确的 kernel-only 计数；如需严格的 kernel-only PMU 事件隔离，需要另外控制 `perf_event_open` 的 enable/disable 时段。Mac 和 Linux 的耗时不可直接配对计算加速比；`perf stat` 需在 Linux 执行，若硬件 PMU 不可用须记录为缺失。
+
+## 最终运行正确性检查（必做）
+
+四种策略注册完成后，仓库内未直接运行新版本的 macOS/OpenMP 二进制测试。应在目标机器运行：
+
+```bash
+g++ -O2 -std=c++17 -fopenmp -pthread experiments/check_nnz_strategies.cpp -o check_all_students
+./check_all_students
+```
+
+成功时预期输出 `15048 correctness checks passed.`。这是预期结果而非已获验证的测试记录。`report/experiment_report.pdf` 必须在报告源文件更新后重新生成。

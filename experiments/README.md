@@ -67,7 +67,7 @@ g++ -O2 -std=c++17 -fopenmp -pthread \
 
 ## 正确性
 
-`check_nnz_strategies.cpp` 验证所有四种 OpenMP student 策略。包含 9 种边界矩阵和 200 个随机矩阵，线程数为 1、2、3、4、8、16，每种配置换向量调用 3 次，共 15048 次检查。包含全空矩阵、首尾及中间空行、线程数多于 NNZ、一行被多个块拆分。每次先将输出填为 NaN，再检查所有行有限且满足原来的 `1e-10` 判定。
+`check_nnz_strategies.cpp` 验证所有四种 OpenMP student 策略。包含 9 种边界矩阵和 200 个随机矩阵，线程数为 1、2、3、4、8、16，每种配置换向量调用 3 次，共 15048 次检查（新版已扩大覆盖范围，但需在提交环境中重新运行确认）。包含全空矩阵、首尾及中间空行、线程数多于 NNZ、一行被多个块拆分。每次先将输出填为 NaN，再检查所有行有限且满足原来的 `1e-10` 判定。
 
 本次分别使用正式 `-O2` OpenMP 构建、AddressSanitizer/UndefinedBehaviorSanitizer 构建、`OMP_DYNAMIC=true OMP_THREAD_LIMIT=2` 的运行及关闭 OpenMP 的串行回退验证。SIMD 和拆行改变浮点累加顺序，报告需要说明；误差阈值保持原样。
 

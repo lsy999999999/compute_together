@@ -45,10 +45,10 @@ int main(int argc, char** argv) {
     std::vector<double> reference(o.rows), output(o.rows);
     spmv_serial(matrix, x, reference);
     using Fn = void (*)(const CsrMatrix&, const std::vector<double>&, std::vector<double>&);
-    const std::vector<Fn> functions = {spmv_omp_row_static, spmv_omp_row_dynamic,
+    const std::vector<Fn> functions = {spmv_omp_student_3, spmv_omp_student_4,
         spmv_omp_student_1, spmv_nnz_blocks<4, false>, spmv_nnz_blocks<2, true>,
         spmv_omp_student_2, spmv_nnz_blocks<8, true>, spmv_nnz_blocks<16, true>};
-    const std::vector<std::string> names = {"row_static", "row_dynamic", "student1",
+    const std::vector<std::string> names = {"student3", "student4", "student1",
         "static_blocks4", "dynamic_blocks2", "student2", "dynamic_blocks8",
         "dynamic_blocks16"};
     std::vector<int> order(functions.size());

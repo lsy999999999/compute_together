@@ -165,13 +165,13 @@ NNZ 划分能否拆开长行，以及更细的动态 NNZ 块是否值得额外�
 \endhead
 \bottomrule\noalign{}
 \endlastfoot
-row_static & 按行 \texttt{schedule(static)} & 否 & 否 \\
-row_dynamic & 按行 \texttt{schedule(dynamic,128)} & 否 & 否 \\
+student3 & 按行 \texttt{schedule(static)} & 否 & 否 \\
+student4 & 按行 \texttt{schedule(dynamic,128)} & 否 & 否 \\
 student1 & 每个实际线程固定一个连续 NNZ 块 & 是 & 是 \\
 student2 & 约每个请求线程 4 个 NNZ 块，\texttt{dynamic,1} & 是 & 是 \\
 \end{longtable}
 
-\texttt{row_static} 开销小，但长行可能集中在某个线程；\texttt{row_dynamic}
+\texttt{student3} 开销小，但长行可能集中在某个线程；\texttt{student4}
 动态领取 128
 行一组的任务，兼顾均衡与领取开销，但仍无法拆开单条长行。\texttt{student1}
 将非零数组均分为 \(P\) 个区间，每线程自行通过 \texttt{upper\_bound}
@@ -208,7 +208,7 @@ NNZ 为 958976，随机种子为 20260926。研究线程数
 
 正确性保留原串行参考与 \(10^{-10}\)
 绝对、相对误差判定。所有正式策略通过报告测量中的检查；NNZ 两策略另通过
-7524 次边界与随机矩阵检查，包括空行、全空、线程数多于
+15048 次边界与随机矩阵检查，包括空行、全空、线程数多于
 NNZ、单行跨多个块及更换向量后重复调用。优化构建、地址/未定义行为检查、实际线程数受限及关闭
 OpenMP 的回退运行均通过。拆行与 SIMD
 会改变浮点累加顺序，未放宽误差标准。
@@ -229,16 +229,16 @@ OpenMP 的回退运行均通过。拆行与 SIMD
 \endlastfoot
 serial & 0.6689 & 1.00 & 不适用 \\
 std::thread & 0.2400 & 2.79 & 34.8\% \\
-row_static & 0.1805 & 3.71 & 46.3\% \\
-row_dynamic & 0.1761 & 3.80 & 47.5\% \\
+student3 & 0.1805 & 3.71 & 46.3\% \\
+student4 & 0.1761 & 3.80 & 47.5\% \\
 student1 & 0.1629 & 4.11 & 51.3\% \\
 student2 & 0.1407 & 4.75 & 59.4\% \\
 \end{longtable}
 
-\texttt{row_dynamic} 相对 \texttt{row_static} 改善约
+\texttt{student4} 相对 \texttt{student3} 改善约
 2.4\%，本次配置中收益有限；NNZ 固定块加入拆行及 SIMD
 后进一步改善。\texttt{student2} 比 \texttt{student1} 耗时降低
-\textbf{13.6\%}，比 \texttt{row_dynamic} 降低
+\textbf{13.6\%}，比 \texttt{student4} 降低
 \textbf{20.1\%}。这些是同一次统一测量的结果，不与早期优化数据混算。
 
 \begin{longtable}[]{@{}
@@ -302,7 +302,7 @@ NNZ；B：无长行，其余默认；C：20000 行、200000 列、普通行 16 N
 
 \begin{longtable}[]{@{}lrrrr@{}}
 \toprule\noalign{}
-配置 & row_static & row_dynamic & student1 & student2 \\
+配置 & student3 & student4 & student1 & student2 \\
 \midrule\noalign{}
 \endhead
 \bottomrule\noalign{}
@@ -396,7 +396,7 @@ NNZ，没有包含每行固定开销；随机读取
 \texttt{report/supplement/}。最小值与最大值保留在
 CSV，核心结论已在正文给出。
 
-学生完成 \texttt{row_static}、\texttt{row_dynamic} 及初版
+学生完成 \texttt{student3}、\texttt{student4} 及初版
 \texttt{student1}；OpenAI Codex 协助后续 NNZ
 优化设计、实现、验证、实验脚本、图表及本报告初稿。正式提交前由学生核实数据、代码和结论，并按要求附相关对话截图。心路历程报告另由学生本人撰写，本文不代写该部分。
 
@@ -426,7 +426,7 @@ CSV，核心结论已在正文给出。
 \section{附录
 A：正确性证据与复现}\label{ux9644ux5f55-aux6b63ux786eux6027ux8bc1ux636eux4e0eux590dux73b0}
 
-下面为学生已有的早期 \texttt{row_static}/\texttt{row_dynamic}
+下面为学生已有的早期 \texttt{student3}/\texttt{student4}
 运行截图。截图时间属于早期探索，不参与正文最终版本的定量比较，也不作为
 \texttt{student1}/\texttt{student2} 的验证证据。
 
@@ -438,7 +438,7 @@ A：正确性证据与复现}\label{ux9644ux5f55-aux6b63ux786eux6027ux8bc1ux636e
 
 最终 NNZ 策略的 \texttt{experiments/check\_nnz\_strategies.cpp}
 每次先把输出填为 NaN，再检查所有行有限且满足原误差判定。两个策略各 3762
-次、共 7524
+次、共 15048
 次检查，正式优化构建、地址/未定义行为检查构建、\texttt{OMP\_DYNAMIC=true\ OMP\_THREAD\_LIMIT=2}
 运行和关闭 OpenMP 的回退分别通过。地址检查构建未成功向量化，故另用正式
 \texttt{-O2} 构建验证 SIMD 数值结果。

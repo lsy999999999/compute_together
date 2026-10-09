@@ -23,8 +23,8 @@ def main():
     threads = np.array([1, 2, 4, 8, 10])
     baseline = float(data[("default_t1", "serial")]["median_ms"])
     styles = [("std_thread", "std::thread", "#64748b", "o"),
-              ("row_static", "row_static", "#2563eb", "s"),
-              ("row_dynamic", "row_dynamic", "#d97706", "^"),
+              ("student3", "student3", "#2563eb", "s"),
+              ("student4", "student4", "#d97706", "^"),
               ("student1", "student1", "#15803d", "D"),
               ("student2", "student2", "#be123c", "o")]
     fig, axes = plt.subplots(1, 2, figsize=(7.1, 2.45), layout="constrained")

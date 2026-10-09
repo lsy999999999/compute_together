@@ -169,8 +169,8 @@ static void spmv_std_thread(const CsrMatrix& matrix, const std::vector<double>& 
     }
 }
 
-// Comparison baseline: static row scheduling; not a graded student slot.
-static void spmv_omp_row_static(
+// Student 3: row-wise static scheduling, kept as an additional OpenMP strategy.
+static void spmv_omp_student_3(
     const CsrMatrix& matrix,
     const std::vector<double>& x,
     std::vector<double>& y) {
@@ -190,8 +190,8 @@ static void spmv_omp_row_static(
     }
 }
 
-// Comparison baseline: dynamic row scheduling with chunk size 128.
-static void spmv_omp_row_dynamic(
+// Student 4: row-wise dynamic scheduling with chunk size 128.
+static void spmv_omp_student_4(
     const CsrMatrix& matrix,
     const std::vector<double>& x,
     std::vector<double>& y) {
@@ -389,22 +389,22 @@ int main(int argc, char** argv) {
                 spmv_std_thread(matrix, x, y, options.threads);
             },
             reference, output, options.repeats);
-        const double openmp_1_ms = benchmark_ms(
-            [&](std::vector<double>& y) {
-                spmv_omp_row_static(matrix, x, y);
-            },
-            reference, output, options.repeats);
-        const double openmp_2_ms = benchmark_ms(
-            [&](std::vector<double>& y) {
-                spmv_omp_row_dynamic(matrix, x, y);
-            },
-            reference, output, options.repeats);
         const double openmp_3_ms = benchmark_ms(
+            [&](std::vector<double>& y) {
+                spmv_omp_student_3(matrix, x, y);
+            },
+            reference, output, options.repeats);
+        const double openmp_4_ms = benchmark_ms(
+            [&](std::vector<double>& y) {
+                spmv_omp_student_4(matrix, x, y);
+            },
+            reference, output, options.repeats);
+        const double openmp_1_ms = benchmark_ms(
             [&](std::vector<double>& y) {
             spmv_omp_student_1(matrix, x, y);
             },
             reference, output, options.repeats);
-        const double openmp_4_ms = benchmark_ms(
+        const double openmp_2_ms = benchmark_ms(
             [&](std::vector<double>& y) {
                 spmv_omp_student_2(matrix, x, y);
             },
@@ -413,10 +413,10 @@ int main(int argc, char** argv) {
         std::cout << std::fixed << std::setprecision(3)
                   << "serial                  " << serial_ms << " ms\n"
                   << "std::thread             " << thread_ms << " ms\n"
-                  << "OpenMP 1 NNZ-fixed SIMD " << openmp_3_ms << " ms\n"
-                  << "OpenMP 2 NNZ-dynamic    " << openmp_4_ms << " ms\n"
-                  << "OpenMP row static       " << openmp_1_ms << " ms\n"
-                  << "OpenMP row dynamic      " << openmp_2_ms << " ms\n"
+                  << "OpenMP 1 NNZ-fixed SIMD " << openmp_1_ms << " ms\n"
+                  << "OpenMP 2 NNZ-dynamic    " << openmp_2_ms << " ms\n"
+                  << "OpenMP 3 row static     " << openmp_3_ms << " ms\n"
+                  << "OpenMP 4 row dynamic    " << openmp_4_ms << " ms\n"
                   << "All correctness checks passed.\n";
     } catch (const std::exception& error) {
         std::cerr << "error: " << error.what() << '\n';

@@ -16,8 +16,8 @@ int main(int argc, char** argv) {
     const std::vector<std::pair<std::string, Kernel>> strategies = {
         {"serial", [&](auto& y) { spmv_serial(matrix, x, y); }},
         {"std_thread", [&](auto& y) { spmv_std_thread(matrix, x, y, options.threads); }},
-        {"row_static", [&](auto& y) { spmv_omp_row_static(matrix, x, y); }},
-        {"row_dynamic", [&](auto& y) { spmv_omp_row_dynamic(matrix, x, y); }},
+        {"student3", [&](auto& y) { spmv_omp_student_3(matrix, x, y); }},
+        {"student4", [&](auto& y) { spmv_omp_student_4(matrix, x, y); }},
         {"student1", [&](auto& y) { spmv_omp_student_1(matrix, x, y); }},
         {"student2", [&](auto& y) { spmv_omp_student_2(matrix, x, y); }},
     };

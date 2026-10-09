@@ -19,12 +19,12 @@ CSR 稀疏矩阵向量乘按行计算 $y_i=\sum_{p=row\_ptr[i]}^{row\_ptr[i+1]-1
 
 | 实现 | 工作划分与调度 | 长行可拆分 | 段内 SIMD |
 | --- | --- | :---: | :---: |
-| row_static | 按行 `schedule(static)` | 否 | 否 |
-| row_dynamic | 按行 `schedule(dynamic,128)` | 否 | 否 |
+| student3 | 按行 `schedule(static)` | 否 | 否 |
+| student4 | 按行 `schedule(dynamic,128)` | 否 | 否 |
 | student1 | 每个实际线程固定一个连续 NNZ 块 | 是 | 是 |
 | student2 | 约每个请求线程 4 个 NNZ 块，`dynamic,1` | 是 | 是 |
 
-`row_static` 开销小，但长行可能集中在某个线程；`row_dynamic` 动态领取 128 行一组的任务，兼顾均衡与领取开销，但仍无法拆开单条长行。`student1` 将非零数组均分为 $P$ 个区间，每线程自行通过 `upper_bound` 找到对应行；完整行直接写输出，边界行先保存部分和，退出并行区后按块编号合并。每块至多记录两个边界行，因此无需对每个乘加使用原子操作。
+`student3` 开销小，但长行可能集中在某个线程；`student4` 动态领取 128 行一组的任务，兼顾均衡与领取开销，但仍无法拆开单条长行。`student1` 将非零数组均分为 $P$ 个区间，每线程自行通过 `upper_bound` 找到对应行；完整行直接写输出，边界行先保存部分和，退出并行区后按块编号合并。每块至多记录两个边界行，因此无需对每个乘加使用原子操作。
 
 `student2` 延用相同计算与合并代码，将块数增至约 $4P$，使先完成的线程可以继续领块。这里 `dynamic,1` 的一个任务是 NNZ 块，而不是一行；请求 8 线程时，默认矩阵约分成 32 块，每块约 3 万 NNZ。NNZ 很少时限制块数，全空矩阵保留一个块。
 
@@ -38,7 +38,7 @@ CSR 稀疏矩阵向量乘按行计算 $y_i=\sum_{p=row\_ptr[i]}^{row\_ptr[i+1]-1
 
 加速比定义为 $S_P=T_s/T_P$，并行效率为 $E_P=S_P/P$，其中 $T_s$ 始终指纯串行基线。默认矩阵线程扩展分析固定采用 `default_t1` 中的串行中位数 **0.668883 ms**，避免随线程档位更换分母。
 
-正确性保留原串行参考与 $10^{-10}$ 绝对、相对误差判定。所有正式策略通过报告测量中的检查；NNZ 两策略另通过 7524 次边界与随机矩阵检查，包括空行、全空、线程数多于 NNZ、单行跨多个块及更换向量后重复调用。优化构建、地址/未定义行为检查、实际线程数受限及关闭 OpenMP 的回退运行均通过。拆行与 SIMD 会改变浮点累加顺序，未放宽误差标准。
+正确性保留原串行参考与 $10^{-10}$ 绝对、相对误差判定。所有四种 OpenMP 策略通过报告测量中的检查；四种 OpenMP 策略另通过 15048 次边界与随机矩阵检查，包括空行、全空、线程数多于 NNZ、单行跨多个块及更换向量后重复调用。优化构建、地址/未定义行为检查、实际线程数受限及关闭 OpenMP 的回退运行均通过。拆行与 SIMD 会改变浮点累加顺序，未放宽误差标准。
 
 \newpage
 
@@ -50,12 +50,12 @@ CSR 稀疏矩阵向量乘按行计算 $y_i=\sum_{p=row\_ptr[i]}^{row\_ptr[i+1]-1
 | --- | ---: | ---: | ---: |
 | serial | 0.6689 | 1.00 | 不适用 |
 | std::thread | 0.2400 | 2.79 | 34.8% |
-| row_static | 0.1805 | 3.71 | 46.3% |
-| row_dynamic | 0.1761 | 3.80 | 47.5% |
+| student3 | 0.1805 | 3.71 | 46.3% |
+| student4 | 0.1761 | 3.80 | 47.5% |
 | student1 | 0.1629 | 4.11 | 51.3% |
 | student2 | 0.1407 | 4.75 | 59.4% |
 
-`row_dynamic` 相对 `row_static` 改善约 2.4%，本次配置中收益有限；NNZ 固定块加入拆行及 SIMD 后进一步改善。`student2` 比 `student1` 耗时降低 **13.6%**，比 `row_dynamic` 降低 **20.1%**。这些是同一次统一测量的结果，不与早期优化数据混算。
+`student4` 相对 `student3` 改善约 2.4%，本次配置中收益有限；NNZ 固定块加入拆行及 SIMD 后进一步改善。`student2` 比 `student1` 耗时降低 **13.6%**，比 `student4` 降低 **20.1%**。这些是同一次统一测量的结果，不与早期优化数据混算。
 
 | 线程数 $P$ | student1 时间 | student2 时间 | student2 加速比 | student2 效率 |
 | ---: | ---: | ---: | ---: | ---: |
@@ -77,7 +77,7 @@ CSR 稀疏矩阵向量乘按行计算 $y_i=\sum_{p=row\_ptr[i]}^{row\_ptr[i+1]-1
 
 以下配置均为 8 线程，时间单位 ms。A：普通行 1 NNZ、仅 1 条长行 100000 NNZ；B：无长行，其余默认；C：20000 行、200000 列、普通行 16 NNZ、16 条长行各 80000 NNZ；D/E：默认矩阵，种子改为 7/42。
 
-| 配置 | row_static | row_dynamic | student1 | student2 |
+| 配置 | student3 | student4 | student1 | student2 |
 | --- | ---: | ---: | ---: | ---: |
 | A：单条长行占主导 | 0.1049 | 0.0946 | 0.0359 | 0.0376 |
 | B：均匀短行 | 0.0674 | 0.0667 | 0.0656 | 0.0646 |
@@ -117,7 +117,7 @@ A 中按行策略无法协同处理唯一长行，NNZ 拆分优势突出；但�
 
 当前最终代码的统一实验驱动为 `report/benchmark_report.cpp`，配置脚本为 `report/measure_report.py`，原始与汇总数据为 `report/measurements_raw.csv`、`report/measurements_summary.csv`。NNZ 调度消融数据位于 `experiments/nnz_schedules_*.csv`，早期 SIMD 消融见 `student3_optimization.md`，数据备份在 `report/supplement/`。最小值与最大值保留在 CSV，核心结论已在正文给出。
 
-学生完成 `row_static`、`row_dynamic` 及初版 `student1`；OpenAI Codex 协助后续 NNZ 优化设计、实现、验证、实验脚本、图表及本报告初稿。正式提交前由学生核实数据、代码和结论，并按要求附相关对话截图。心路历程报告另由学生本人撰写，本文不代写该部分。
+学生完成 `student3`、`student4` 及初版 `student1`；OpenAI Codex 协助后续 NNZ 优化设计、实现、验证、实验脚本、图表及本报告初稿。正式提交前由学生核实数据、代码和结论，并按要求附相关对话截图。心路历程报告另由学生本人撰写，本文不代写该部分。
 
 参考资料：
 
@@ -130,11 +130,11 @@ A 中按行策略无法协同处理唯一长行，NNZ 拆分优势突出；但�
 
 # 附录 A：正确性证据与复现
 
-下面为学生已有的早期 `row_static`/`row_dynamic` 运行截图。截图时间属于早期探索，不参与正文最终版本的定量比较，也不作为 `student1`/`student2` 的验证证据。
+下面为学生已有的早期 `student3`/`student4` 运行截图。截图时间属于早期探索，不参与正文最终版本的定量比较，也不作为 `student1`/`student2` 的验证证据。
 
 ![早期两种按行策略在 4、8 线程下通过正确性检查。](assets/early_correctness.png){width=14.5cm}
 
-最终 NNZ 策略的 `experiments/check_nnz_strategies.cpp` 每次先把输出填为 NaN，再检查所有行有限且满足原误差判定。两个策略各 3762 次、共 7524 次检查，正式优化构建、地址/未定义行为检查构建、`OMP_DYNAMIC=true OMP_THREAD_LIMIT=2` 运行和关闭 OpenMP 的回退分别通过。地址检查构建未成功向量化，故另用正式 `-O2` 构建验证 SIMD 数值结果。
+最终四种 OpenMP 策略的 `experiments/check_nnz_strategies.cpp` 每次先把输出填为 NaN，再检查所有行有限且满足原误差判定。四种策略各 3762 次、共 15048 次检查，正式优化构建、地址/未定义行为检查构建、`OMP_DYNAMIC=true OMP_THREAD_LIMIT=2` 运行和关闭 OpenMP 的回退分别通过。地址检查构建未成功向量化，故另用正式 `-O2` 构建验证 SIMD 数值结果。
 
 在项目根目录复现正文数据：
 
@@ -148,4 +148,4 @@ clang++ -O2 -std=c++17 -Xpreprocessor -fopenmp \
 python3 report/measure_report.py /private/tmp/spmv_report_bench
 ```
 
-正文图表由 `report/make_figures.py` 读取 CSV 生成。调度消融的复现命令见 `experiments/README.md`。最终源码中共注册四个 OpenMP 策略，均经过原 `benchmark_ms` 的预热及正确性检查。
+正文图表由 `report/make_figures.py` 读取 CSV 生成。调度消融的复现命令见 `experiments/README.md`。最终源码中共注册四个 `spmv_omp_student_1` 至 `spmv_omp_student_4` 策略，均经过原 `benchmark_ms` 的预热及正确性检查。

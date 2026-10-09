@@ -1,0 +1,5 @@
+std_thread,8,10000,0.655197 ms/call
+std_thread,8,10000,0.665870 ms/call
+std_thread,8,10000,0.665208 ms/call
+std_thread,8,10000,0.661936 ms/call
+std_thread,8,10000,0.679338 ms/call

@@ -1,0 +1,12 @@
+
+ Performance counter stats for './perf_spmv std_thread --threads 8 --repeats 10000' (5 runs):
+
+    61,761,670,884      cycles                                                                  ( +-  0.51% )
+    84,477,725,793      instructions                                                            ( +-  0.06% )
+    15,829,093,369      cache-references                                                        ( +-  0.25% )
+     2,528,069,550      cache-misses                                                            ( +-  3.22% )
+            34,951      context-switches                                                        ( +-  0.09% )
+                82      cpu-migrations                                                          ( +- 13.33% )
+
+       6.695411126 +- 0.040072001 seconds time elapsed  ( +-  0.60% )
+

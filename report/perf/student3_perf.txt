@@ -1,0 +1,12 @@
+
+ Performance counter stats for './perf_spmv student3 --threads 8 --repeats 10000' (5 runs):
+
+    44,985,228,044      cycles                                                                  ( +-  0.64% )
+    70,510,334,810      instructions                                                            ( +-  0.04% )
+    14,498,312,273      cache-references                                                        ( +-  0.05% )
+     1,734,807,788      cache-misses                                                            ( +-  1.15% )
+               283      context-switches                                                        ( +- 52.54% )
+                 1      cpu-migrations                                                          ( +- 44.72% )
+
+       1.554346118 +- 0.009319860 seconds time elapsed  ( +-  0.60% )
+

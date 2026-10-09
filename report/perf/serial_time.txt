@@ -1,0 +1,5 @@
+serial,8,10000,0.780997 ms/call
+serial,8,10000,0.774585 ms/call
+serial,8,10000,0.763666 ms/call
+serial,8,10000,0.777037 ms/call
+serial,8,10000,0.764898 ms/call

@@ -1,0 +1,5 @@
+student2,8,10000,0.118572 ms/call
+student2,8,10000,0.117504 ms/call
+student2,8,10000,0.118826 ms/call
+student2,8,10000,0.121408 ms/call
+student2,8,10000,0.117850 ms/call

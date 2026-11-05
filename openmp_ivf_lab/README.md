@@ -20,6 +20,8 @@ macOS 可用 Apple Clang 和 Homebrew `libomp` 做本地正确性验证；`Makef
 
 正式 A–E、std 对照和性能工具采集已接入：在服务器执行 `bash scripts/run_all.sh /var/dataset`。脚本自动保存构建、测试、输入哈希、原始计时、独立工作量统计、向量化证据和 perf/回退输出，详见 [EXPERIMENTS.md](EXPERIMENTS.md)。
 
+2026-11-05 的正式服务器结果已独立复核：40 配置、400 次重复与 16,910 个 batch 样本通过核对。四页报告草稿与完整指标见 [report/README.md](report/README.md)。原始结果保留于本机下载目录，未新增上传至 GitHub；可用 `scripts/package_submission.py` 将代码、报告、原始 CSV 和工具日志打包，个人材料由学生补充。
+
 先运行串行版本：
 
 ```bash

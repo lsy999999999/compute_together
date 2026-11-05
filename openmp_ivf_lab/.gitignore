@@ -3,5 +3,6 @@
 /ivf_student_tests
 /build/
 /dataset/
+/submission/
 __pycache__/
 .DS_Store

@@ -1,0 +1,53 @@
+{
+  "status": "PASS",
+  "source_directory": "/Applications/computer_together/openmp_ivf_lab/results/download_from_server/server_full_20261105_124550",
+  "source_commit": "32481fd77f2f4600f45fff87a66ea1a307c159db",
+  "configurations": 40,
+  "formal_repeats": 400,
+  "batch_samples": 16910,
+  "diagnostic_runs": 40,
+  "checked_cpu_endpoints": 10294,
+  "groups": {
+    "A_scaling": 24,
+    "B_order": 6,
+    "C_grain": 4,
+    "D_nprobe": 3,
+    "E_simd": 8,
+    "std_compare": 2,
+    "baseline": 2
+  },
+  "locally_matched_dataset_hashes": 5,
+  "source_hashes_matched": 13,
+  "time_fallback": {
+    "serial": {
+      "User time (seconds)": 1.78,
+      "System time (seconds)": 0.59,
+      "Maximum resident set size (kbytes)": 1013864.0,
+      "Voluntary context switches": 1.0,
+      "Involuntary context switches": 26.0,
+      "Exit status": 0.0
+    },
+    "omp2": {
+      "User time (seconds)": 2.96,
+      "System time (seconds)": 0.77,
+      "Maximum resident set size (kbytes)": 1013816.0,
+      "Voluntary context switches": 3068.0,
+      "Involuntary context switches": 31.0,
+      "Exit status": 0.0
+    },
+    "std": {
+      "User time (seconds)": 3.34,
+      "System time (seconds)": 0.69,
+      "Maximum resident set size (kbytes)": 1013888.0,
+      "Voluntary context switches": 199.0,
+      "Involuntary context switches": 381.0,
+      "Exit status": 0.0
+    }
+  },
+  "limitations": [
+    "CPU endpoint observations are not full migration traces.",
+    "Host physical CPU allocation remains unknown in the VM.",
+    "perf kernel tool missing; GNU time covers whole processes.",
+    "grain=4096 has high variance; causal attribution needs a rerun."
+  ]
+}

@@ -18,6 +18,8 @@ macOS 可用 Apple Clang 和 Homebrew `libomp` 做本地正确性验证；`Makef
 
 完整 SIFT1M 本机检查已执行，记录见 [VALIDATION.md](VALIDATION.md)。服务器操作见 [SERVER_TEST.md](SERVER_TEST.md)，可通过 `scripts/validate_real_data.py` 自动运行真实数据检查和一组初步计时。`dataset/` 已加入 Git 忽略规则，数据保留在本机或服务器。
 
+正式 A–E、std 对照和性能工具采集已接入：在服务器执行 `bash scripts/run_all.sh /var/dataset`。脚本自动保存构建、测试、输入哈希、原始计时、独立工作量统计、向量化证据和 perf/回退输出，详见 [EXPERIMENTS.md](EXPERIMENTS.md)。
+
 先运行串行版本：
 
 ```bash
@@ -106,6 +108,10 @@ make vector-report
 | `--k` / `--nprobe` | 10 / 8 |
 | `--threads` / `--grain` | 4 / 1024 |
 | `--simd` | 默认 `off`；两个 OpenMP 版本可用 `on` |
+| `--query-order` | `original` / `candidates-asc` / `candidates-desc`；同步重排 ground truth |
+| `--batches-csv` | 正式重复中每个同步 batch 调用的原始时间 |
+| `--mode stats` / `--stats-prefix` | 单独运行统计，输出查询/线程/batch/列表四份 CSV |
+| `--pin-cpus` | Linux 主线程/std 线程绑定列表；总脚本同时设置 OpenMP places 和绑定 |
 | `--repeats` / `--warmup` | 10 / 1；warmup 可以为 0 |
 | `--base` / `--centroids` / `--cluster-ids` | 指定数据库、中心、列表分配文件 |
 | `--queries-file` / `--gt` | 指定查询 `.fbin` 和 ground truth `.ibin` |
@@ -115,9 +121,9 @@ make vector-report
 
 每次运行都会重置并检查全部输出。结果按距离、编号升序排列，编号必须与参考一致，距离容差为 `atol=rtol=1e-10`。候选不足 k 个时，余下位置填 `id=-1, distance=+inf`。当 `nprobe=nlist` 时，参考结果改用全库扫描。
 
-CSV 记录策略、请求线程数、查询数、batch、k、nprobe、grain、SIMD 开关、重复编号、时间、QPS、Recall 和检查结果。作业要求的候选数、线程工作量、实际参与线程数和延迟分位数仍需增加采集。`std` 创建 `min(threads, 当前 batch 查询数)` 个线程；CSV 的 `threads` 记录请求值。数据路径、编译选项和运行环境请记在报告中。
+CSV 记录策略、请求线程数、查询数、batch、k、nprobe、grain、SIMD 开关、查询顺序、重复编号、时间、QPS、Recall 和检查结果。独立 stats 模式采集候选数、线程工作量、团队大小、活动候选线程数、任务/数组大小和阶段诊断；总脚本从逐 batch 原始样本计算延迟分位数。`std` 创建 `min(threads, 当前 batch 查询数)` 个线程；计时 CSV 的 `threads` 记录请求值，统计 CSV 单独记录实际值。数据路径、编译选项和运行环境请记在报告中。
 
-`--only` 只选择要测的检索函数。直接对整个程序执行 `perf stat`，仍会把加载和串行参考算进去；如何单独测检索部分，见作业的性能工具要求。
+`--only` 只选择要测的检索函数。总脚本使用 perf 的延迟启动与 FIFO 控制，在预热后开计数、结果检查前关计数并等待 ack。直接对整个程序执行普通 `perf stat` 仍包含加载和参考计算；范围与回退说明见 EXPERIMENTS.md。
 
 ## 文件说明
 
@@ -126,9 +132,12 @@ CSV 记录策略、请求线程数、查询数、batch、k、nprobe、grain、SI
 | `ivf_io.h/.cpp` | 数据和索引读取 |
 | `ivf_search.h/.cpp` | 距离、Top-k、串行检索、结果检查和 Recall |
 | `ivf_student.cpp` | 两种 OpenMP、SIMD 候选距离和 `std::thread` 实现 |
+| `ivf_profile.h/.cpp` | 独立统计结构、Linux 绑定与 perf FIFO 确认协议 |
 | `ivf_lab.cpp` | 参数解析、运行、计时和 CSV 输出 |
 | `tests/ivf_tests.cpp` | 小型数据、文件读取和结果检查的测试 |
 | `tests/ivf_student_tests.cpp` | 学生实现的边界情况、随机小型索引和多线程检查 |
 | `tests/smoke_cli.py` | 临时合成文件的端到端 CLI、CSV 检查 |
+| `tests/experiment_modes.py` | 排序、统计、延迟、配额和 perf 控制协议检查 |
 | `scripts/validate_real_data.py` | 完整 SIFT1M 的 24 组检查与 12 组初步计时 |
+| `scripts/run_all.sh` / `run_experiments.py` | 正式 A–E、std 与性能工具采集入口 |
 | `IMPLEMENTATION.md` | 并行划分、缓冲区生命周期和合并说明 |

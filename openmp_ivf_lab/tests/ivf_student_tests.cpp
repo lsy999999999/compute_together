@@ -1,4 +1,5 @@
 #include "ivf_search.h"
+#include "ivf_profile.h"
 
 #include <omp.h>
 
@@ -173,6 +174,70 @@ void distance_cases() {
     }
 }
 
+void statistics_cases() {
+    std::mt19937 rng(42);
+    const auto index = random_index(17, rng);
+    const std::vector<float> queries(5 * index.dim, 3);
+    std::vector<Strategy> profiled(std::begin(strategies), std::end(strategies));
+    profiled.push_back({"serial diagnostics", ivf::search_serial_diagnostics, false});
+    for (const auto& strategy : profiled) {
+        for (const int threads : {1, 4}) {
+            for (const std::size_t grain : {1, 64}) {
+                for (const std::size_t batch : {1, 3}) {
+                    ivf::SearchOptions options;
+                    options.threads = threads;
+                    options.grain = grain;
+                    options.nprobe = 3;
+                    options.k = 10;
+                    options.simd = strategy.simd;
+                    ivf::SearchStatistics stats;
+                    options.statistics = &stats;
+                    for (std::size_t begin = 0; begin < 5; begin += batch) {
+                        const auto count = std::min(batch, 5 - begin);
+                        std::vector<ivf::Neighbor> actual(count * options.k), expected(actual.size());
+                        strategy.search(index, queries.data() + begin * index.dim, count, options, actual.data());
+                        ivf::search_ivf_serial(index, queries.data() + begin * index.dim, count, options, expected.data());
+                        ivf::check_result(actual, expected);
+                        if (stats.actual_threads < 1 || stats.actual_threads > threads || stats.queries.size() != count) {
+                            throw std::runtime_error("diagnostic dimensions/team size");
+                        }
+                        std::size_t candidates = 0, tasks = 0, completed = 0, observed = 0, task_work = 0;
+                        for (std::size_t q = 0; q < count; ++q) {
+                            std::size_t expected_candidates = 0, expected_tasks = 0;
+                            for (auto list : ivf::select_lists(index, queries.data() + (begin + q) * index.dim, options.nprobe)) {
+                                const auto length = index.list_ptr[list + 1] - index.list_ptr[list];
+                                expected_candidates += length;
+                                expected_tasks += length / grain + (length % grain != 0);
+                            }
+                            const auto& s = stats.queries[q];
+                            if (s.candidates != expected_candidates) throw std::runtime_error("diagnostic candidate count");
+                            if (strategy.search == ivf::search_omp_student_2 &&
+                                (s.candidate_tasks != expected_tasks ||
+                                 s.local_result_bytes < expected_tasks * options.k * sizeof(ivf::Neighbor))) {
+                                throw std::runtime_error("diagnostic task coverage/workspace");
+                            }
+                            for (const auto value : {s.select_ms, s.partition_ms, s.taskgroup_ms, s.merge_ms, s.scan_topk_ms}) {
+                                if (!std::isfinite(value) || value < 0) throw std::runtime_error("invalid diagnostic interval");
+                            }
+                            candidates += s.candidates;
+                            tasks += s.candidate_tasks;
+                        }
+                        for (int t = 0; t < stats.actual_threads; ++t) {
+                            observed += stats.threads[t].candidates;
+                            task_work += stats.threads[t].candidate_tasks;
+                            completed += stats.threads[t].completed_queries;
+                        }
+                        if (candidates != observed || tasks != task_work || completed != count) {
+                            throw std::runtime_error("diagnostic work does not reconcile across workers");
+                        }
+                    }
+                }
+            }
+        }
+    }
+    std::cout << "PASS: 48 diagnostic configurations; work totals, task coverage, buffers, results\n";
+}
+
 }  // namespace
 
 int main() {
@@ -181,6 +246,7 @@ int main() {
         distance_cases();
         edge_cases();
         random_cases();
+        statistics_cases();
         std::cout << "PASS: " << cases << " student strategy configurations; SIMD distances, "
                      "threads 1/2/4/8, batches, ties, empty/long lists, padding, full scan\n";
         return 0;

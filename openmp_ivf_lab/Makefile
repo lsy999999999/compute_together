@@ -17,8 +17,8 @@ LDLIBS += -lomp
 VECTOR_FLAGS = -Rpass=loop-vectorize -Rpass-missed=loop-vectorize
 endif
 
-COMMON = ivf_io.cpp ivf_search.cpp ivf_student.cpp
-HEADERS = ivf_io.h ivf_search.h
+COMMON = ivf_io.cpp ivf_search.cpp ivf_student.cpp ivf_profile.cpp
+HEADERS = ivf_io.h ivf_search.h ivf_profile.h
 
 .PHONY: all test smoke vector-report clean
 all: ivf_lab
@@ -38,6 +38,7 @@ test: ivf_tests ivf_student_tests
 
 smoke: ivf_lab
 	$(PYTHON) tests/smoke_cli.py --binary ./ivf_lab
+	$(PYTHON) tests/experiment_modes.py --binary ./ivf_lab
 
 vector-report: ivf_student.cpp ivf_search.cpp $(HEADERS)
 	mkdir -p build

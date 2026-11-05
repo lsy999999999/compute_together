@@ -1,5 +1,22 @@
 # Linux 服务器测试步骤
 
+## 正式 A–E、std 对照和性能工具（下一阶段）
+
+初步服务器检查通过后，更新代码并执行：
+
+```bash
+cd ~/compute_together
+git pull --ff-only origin main
+cd openmp_ivf_lab
+bash scripts/run_all.sh /var/dataset
+```
+
+脚本自动重新编译、测试和运行全部实验，预热一次、正式重复十次。输出放在新建的 `results/server_full_时间戳/`，不覆盖初步结果。它检测 CPU 亲和性和可读配额，固定大 batch=4P；虚拟机的客户机 CPU 预算单独标注。需要限制预算时，在末尾添加 `--cores 8`。
+
+结束显示 `COMPLETE:` 后，下载整个新目录。目录包含 A–E 汇总、每次重复和每个 batch 的原始 CSV、独立统计、源码/环境记录、向量化证据与 perf 或回退输出。perf 权限或事件不支持时会保留错误，并尝试 `/usr/bin/time -v`，不需要 sudo。详细配置和计量说明见 [EXPERIMENTS.md](EXPERIMENTS.md)。
+
+下方保留上一阶段的初步验证步骤，已有初步结果时可以直接使用本节命令。
+
 ## 1. 更新代码和编译
 
 登录服务器后，已有 `~/compute_together` 仓库时执行：

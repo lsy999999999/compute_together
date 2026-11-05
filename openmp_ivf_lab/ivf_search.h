@@ -7,6 +7,8 @@
 
 namespace ivf {
 
+struct SearchStatistics;
+
 struct Neighbor {
     double distance = std::numeric_limits<double>::infinity();
     std::int32_t id = -1;
@@ -31,6 +33,8 @@ struct SearchOptions {
     int threads = 4;
     std::size_t grain = 1024;
     bool simd = false;  // Candidate distances in omp1/omp2; centers stay scalar.
+    std::vector<int> pin_cpus;  // Optional Linux binding for std::thread workers.
+    SearchStatistics* statistics = nullptr;  // Separate diagnostic runs only.
 };
 
 double l2_distance_scalar(const float* a, const float* b, std::size_t dim);

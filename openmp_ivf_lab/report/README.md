@@ -1,5 +1,7 @@
 # 实验二报告与复核记录
 
+**新版优先看 [LaTeX 正文](latex/main.pdf) 和 [独立附录](latex/appendix.pdf)**：正文 4 页，附录补充实现选择、完整配置、全部时间与扩展指标。源码与编译方法见 [latex/README.md](latex/README.md)。以下 Markdown/ReportLab 版本作为早期版本保留。
+
 - `experiment_report.pdf`：四页报告草稿，已逐页渲染检查；学生核实后可用于提交。
 - `experiment_report.md`：可编辑正文，与 PDF 内容一致。
 - `all_metrics.md`：40 个配置的完整时间范围、QPS、Recall 和延迟附录。

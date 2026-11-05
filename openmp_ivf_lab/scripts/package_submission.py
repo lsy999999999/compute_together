@@ -23,7 +23,7 @@ def main():
         paths=directory.rglob('*') if directory.name=='report' else directory.iterdir()
         for path in paths:
             if not path.is_file() or '__pycache__' in path.parts:continue
-            if path.suffix in ('.cpp','.h','.py','.sh','.md','.pdf','.png','.json','.sha256') or path.name in ('Makefile','.gitignore'):
+            if path.suffix in ('.cpp','.h','.py','.sh','.md','.tex','.pdf','.png','.json','.sha256') or path.name in ('Makefile','.gitignore'):
                 files.append((path,Path(PREFIX)/'openmp_ivf_lab'/path.relative_to(ROOT)))
     sources=[args.results]
     pilot=ROOT/'results/download_from_server/server_20261105_112425'
@@ -34,8 +34,10 @@ def main():
                 files.append((path,Path(PREFIX)/'openmp_ivf_lab/results/download_from_server'/source.name/path.relative_to(source)))
     readme='''# 实验二材料（待学生核实并补充个人材料）
 
-四页报告：openmp_ivf_lab/report/experiment_report.pdf
-可编辑正文、完整表与复核记录位于同一 report 目录。
+新版四页报告：openmp_ivf_lab/report/latex/main.pdf
+独立完整附录：openmp_ivf_lab/report/latex/appendix.pdf
+LaTeX 正文与编译入口位于同一 latex 目录，矢量图位于 report/figures/。
+早期 Markdown/ReportLab 版本、完整表与复核记录保留在 report 目录。
 源码和测试：openmp_ivf_lab/，正式实验代码提交为 32481fd。
 原始 CSV、构建、环境与工具输出：openmp_ivf_lab/results/download_from_server/。
 

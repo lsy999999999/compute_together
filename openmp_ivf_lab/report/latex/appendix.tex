@@ -1,0 +1,85 @@
+\input{preamble.tex}
+\hypersetup{pdftitle={IVF-Flat 实验数据与实现附录}}
+\begin{document}
+\begin{center}
+{\LARGE\bfseries IVF-Flat：数据与实现附录}\par\vspace{4pt}
+刘师妤\quad 2024201568\qquad 独立附录，不计入四页正文
+\end{center}
+\section{实现决策的依据与证据边界}
+本节说明代码的结构和实验能支持的结论，供复核使用。两种 OpenMP 策略、SIMD、std 对照以及 A--E 参数组由作业要求给出；static 调度、父子任务组织、私有 Top-$k$、诊断分离和显式绑定属于本实现的具体选择。
+\begin{enumerate}
+\item \textbf{先建立行为相同的基线。}各版本保留同一中心选择、候选集合、比较器和输出检查；因此在固定 $n_{\rm probe}$ 时，性能变化可以在同一工作量下解释。全库扫描只用于检查，不作为加速比分子。
+\item \textbf{static 的用途是控制比较条件。}连续分配容易确定查询归属，并与 std 对照一致。它按数量分配而非按成本分配，B 组结果显示排序后的失衡；本轮没有 dynamic 或 guided 的实测，不能据此断言它们更快或更慢。
+\item \textbf{父任务把查询间与查询内并行放在一个团队。}为各查询建父 task，可并发执行不同查询的中心选择；子 task 在各自候选块上计算。将中心选择留给逐查询的 single 循环，会使不同查询的该阶段串行；为每个查询再开一个 parallel 则会违反一个 batch 一个团队的约束。
+\item \textbf{私有局部结果控制共享写入。}子任务持有自己的 TopK，对局部结果数组写入不相交切片，父任务只在 taskgroup 结束后读取。异常按任务槽记录，同步完成后重抛，避免任务抛出穿过运行时或提前释放数组。
+\item \textbf{SIMD 只做维度归约。}不同维度的差值平方可归约，而堆更新依赖已有状态。double 计算与 SIFT 整数坐标配合，保持精确距离；任意浮点数据需要额外测试舍入和近等距排序。
+\item \textbf{grain=1024 是统一基准。}未依据本轮最小耗时反向选择该值。实验在相同条件下测试 64、256、1024、4096；256 与 1024 接近，4096 高波动。没有引入事后调好的阈值或小 batch 特殊路径。
+\end{enumerate}
+
+\lead{工作量模型。}
+中心距离为每查询 $4096\times128=524288$ 次维度项计算。$n_{\rm probe}=8$ 时，平均候选为 $296624/128=2317.375$，候选维度项平均为 296,624。前者甚至多于后者，因此只向量化或并行化候选阶段，仍会留下中心选择成本。这是\emph{操作数量}的比较，内存行为、堆与运行时开销不同，不能把它直接当作实测时间比例或据此给出精确 Amdahl 上限。
+
+\lead{局部结果的具体例子。}
+设 $k=2$，两块的排序结果分别为 $[a_1,a_2,a_3]$ 和 $[b_1,b_2,b_3]$。即便 $a_3$ 优于所有 $b$，$a_1,a_2$ 也排在它之前，$a_3$ 仍不可能进入全局前二。保留 $[a_1,a_2]$、$[b_1,b_2]$ 后再取前二足够。对等距项使用 id 打破平局，证明中的比较顺序在局部与全局保持一致。
+
+\lead{待验证的扩展。}
+可交替复测 grain=1024/4096，记录 CPU 负载、频率或虚拟机调度状态；可比较 static/dynamic；可给 std 增加持久线程池以隔离创建回收成本；可另测小 batch 串行回退。以上为后续方案，本次未执行或未实现。
+
+\newpage
+\section{全部配置与测量}
+编号对应 \code{run_编号/}。完全相同的配置只测一次，不同实验组用 run\_id 复用；例如 026 同时属于 A、B、C、D、E 的固定对照，不能视为五轮独立重复。
+所有配置 $Q=128,k=10$，warmup=1，repeats=10；各次输出检查 PASS。空闲线程的统计槽保留零值。
+\input{configurations.tex}
+
+\newpage
+\section{全部时间、吞吐、召回与延迟}
+min/med/max 为十轮总检索时间。QPS 用 $Q$ 除以中位时间，Recall 以百分数列出。p50/p95 由所有正式逐 batch 样本按 $(n-1)p$ 线性插值；batch=1 是查询延迟，batch=128 是批完成时间，二者均以 ms 表示。由于本轮 $Q=128$、大 batch=128，大 batch 每次重复只有一个时间样本。
+\input{measurements.tex}
+
+\newpage
+\section{A 组完整加速比与效率}
+加速比基线固定为同 batch 的串行 IVF 中位数：batch=1 为 113.689979 ms（001），batch=128 为 113.8947505 ms（002）。不以全库扫描作为分子，不把 SIMD 的收益混入本表。
+\input{scaling_metrics.tex}
+\section{异常值和补充图}
+grain=4096（033）的十次总时间 (ms) 为
+\[
+\begin{gathered}
+63.817,\ 24.031,\ 12.196,\ 43.830,\ 75.667,\\
+24.238,\ 31.924,\ 71.681,\ 44.009,\ 11.364.
+\end{gathered}
+\]
+数据均已保留，中位数为 37.877384 ms。图中的散点显示全部十次重复；连线仅表达本轮不同搜索范围的性能取舍。
+\begin{center}
+\includegraphics[width=.95\linewidth]{sensitivity.pdf}
+\captionof{figure}{粒度的全部重复与固定 32 线程下 Recall/QPS 关系。}
+\end{center}
+
+\newpage
+\section{数据、原始证据与复现入口}
+\input{provenance.tex}
+\subsection{证据路径}
+\begin{itemize}
+\item \code{manifest.json}：CPU、配额、绑定环境、输入形状、哈希与正式配置记录。
+\item \code{unit_tests.log}、\code{cli_tests.log}：服务器测试日志；\code{vectorization.txt}：实际 GCC 向量化证据。
+\item 各 \code{run_*/repeats.csv}、\code{batch_samples.csv}：十次重复及逐 batch 样本；\code{query_order.csv}：原始查询编号与候选数。
+\item 各 \code{run_*/diagnostics_*.csv}：另跑一次的查询、线程、batch 与列表统计；线程 CPU 是端点观察。
+\item \code{perf/*/hardware/perf.log}、\code{software/perf.log}：原始 perf 失败；\code{time_fallback/}：GNU time 与对应工作负载结果。
+\item \code{report/audit.json}：400 次正式重复、16,910 个 batch 样本、40 次诊断和哈希的独立复核。
+\item \code{input_files.sha256}：固定下载文件摘要。
+\end{itemize}
+
+\subsection{复现命令与代码位置}
+在 Linux 仓库 \code{openmp_ivf_lab} 中执行：
+\begin{quote}\ttfamily\small
+bash scripts/run\_all.sh /var/dataset
+\end{quote}
+脚本重新编译、测试并创建新的结果目录，不覆盖本轮结果。五个配套数据文件来自课程完整 SIFT1M；需保留同一套数据库、中心和列表编号，不截断数据库。
+\begin{itemize}
+\item \code{ivf_student.cpp}：omp1、omp2、SIMD、std 与独立诊断实例。
+\item \code{ivf_lab.cpp}：重排 ground truth、计时、完整检查与阶段统计输出。
+\item \code{ivf_profile.cpp}：Linux 绑定和 perf FIFO 控制协议。
+\item \code{scripts/run_experiments.py}：A--E、std 对照、配置复用及 perf 回退。
+\item \code{scripts/audit_experiments.py}：从原始记录独立复核；本轮结果文件保持不变。
+\end{itemize}
+本附录是实现和数据说明，个人心路历程另由学生本人撰写。
+\end{document}

@@ -1,0 +1,41 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[top=14mm,bottom=15mm,left=17mm,right=17mm]{geometry}
+\usepackage{fontspec,xeCJK}
+\IfFontExistsTF{Times New Roman}{\setmainfont{Times New Roman}}{\setmainfont{Latin Modern Roman}}
+\IfFontExistsTF{Songti SC}{
+  \setCJKmainfont{Songti SC}[AutoFakeBold=2]
+  \setCJKsansfont{Heiti SC}
+}{
+  \setCJKmainfont{FandolSong-Regular.otf}[BoldFont=FandolSong-Bold.otf]
+  \setCJKsansfont{FandolHei-Regular.otf}
+}
+\IfFontExistsTF{Menlo}{\setmonofont{Menlo}[Scale=0.87]}{\setmonofont{Latin Modern Mono}[Scale=0.9]}
+\usepackage{amsmath,amssymb,booktabs,array,longtable,graphicx,xcolor,enumitem}
+\usepackage{unicode-math}
+\setmathfont{latinmodern-math.otf}
+\usepackage[font=small,labelfont=bf,skip=3pt]{caption}
+\usepackage[colorlinks=true,linkcolor=blue!45!black,urlcolor=blue!45!black]{hyperref}
+\hypersetup{pdftitle={OpenMP IVF-Flat 向量检索实验报告},pdfauthor={刘师妤}}
+\setlength{\parindent}{2em}
+\setlength{\parskip}{2.5pt}
+\setlength{\tabcolsep}{4.2pt}
+\renewcommand{\arraystretch}{1.12}
+\setlength{\abovedisplayskip}{5pt}
+\setlength{\belowdisplayskip}{5pt}
+\setlength{\textfloatsep}{6pt}
+\setlength{\intextsep}{6pt}
+\setlength{\emergencystretch}{1.5em}
+\setlist{nosep,leftmargin=1.7em}
+\renewcommand{\figurename}{图}
+\renewcommand{\tablename}{表}
+\makeatletter
+\renewcommand\section{\@startsection{section}{1}{0pt}{7pt}{4pt}{\large\bfseries}}
+\renewcommand\subsection{\@startsection{subsection}{2}{0pt}{5pt}{2pt}{\normalsize\bfseries}}
+\makeatother
+\newcommand{\code}[1]{\texttt{\detokenize{#1}}}
+\newcommand{\lead}[1]{\noindent\textbf{#1}\quad}
+\newcommand{\smalltable}{\fontsize{9}{11}\selectfont}
+\newcommand{\runid}[1]{\texttt{run\_#1}}
+\graphicspath{{figures/}{../figures/}}
+\raggedbottom
+\AtBeginDocument{\fontsize{10.3}{14.2}\selectfont}

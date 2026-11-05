@@ -1,0 +1,4 @@
+["/Applications/computer_together/openmp_ivf_lab/ivf_lab", "--base", "/Applications/computer_together/openmp_ivf_lab/dataset/sift_base.fbin", "--queries-file", "/Applications/computer_together/openmp_ivf_lab/dataset/sift_query.fbin", "--gt", "/Applications/computer_together/openmp_ivf_lab/dataset/gt.ibin", "--centroids", "/Applications/computer_together/openmp_ivf_lab/dataset/centroid_4096.fvecs", "--cluster-ids", "/Applications/computer_together/openmp_ivf_lab/dataset/cluster_id_4096.ivecs", "--only", "omp1", "--simd", "off", "--queries", "128", "--batch", "32", "--nprobe", "8", "--grain", "1024", "--k", "10", "--threads", "4", "--warmup", "1", "--repeats", "10", "--csv", "/Applications/computer_together/openmp_ivf_lab/results/local_macos_sift1m_20261105/bench_omp1_off_p4_b32.csv"]
+N=1000000 dim=128 nlist=4096 strategy=omp1 threads=4 simd=off
+correctness=PASS recall@10=0.726562
+time_ms[min/median/max]=10.727958/13.180104/13.539000 qps=9711.607370

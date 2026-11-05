@@ -1,0 +1,7 @@
+/ivf_lab
+/ivf_tests
+/ivf_student_tests
+/build/
+/dataset/
+__pycache__/
+.DS_Store

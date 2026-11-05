@@ -1,0 +1,63 @@
+{
+  "started_utc": "2026-11-05T09:27:02.065290+00:00",
+  "environment": {
+    "platform": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+    "machine": "arm64",
+    "python": "3.14.3",
+    "logical_cpus": 10,
+    "omp_environment": {
+      "OMP_NUM_THREADS": null,
+      "OMP_DYNAMIC": null,
+      "OMP_PROC_BIND": null,
+      "OMP_PLACES": null
+    },
+    "compiler": "Apple clang version 21.0.0 (clang-2100.1.1.101)\nTarget: arm64-apple-darwin25.5.0\nThread model: posix\nInstalledDir: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin\n",
+    "cpu": "sysctl: sysctl fmt -1 1024 1: Operation not permitted\n"
+  },
+  "dataset": {
+    "sift_base.fbin": {
+      "path": "/Applications/computer_together/openmp_ivf_lab/dataset/sift_base.fbin",
+      "rows": 1000000,
+      "dim": 128,
+      "bytes": 512000008,
+      "sha256": "8c7b3d999ba3133f865af72df078f77c2d248fdb80571d7ea1f1bb8e1750658e"
+    },
+    "sift_query.fbin": {
+      "path": "/Applications/computer_together/openmp_ivf_lab/dataset/sift_query.fbin",
+      "rows": 10000,
+      "dim": 128,
+      "bytes": 5120008,
+      "sha256": "9b0082b67d0ac55b4c7d42216560344567ad87ce3e75a9d5214a0762f1c15d65"
+    },
+    "gt.ibin": {
+      "path": "/Applications/computer_together/openmp_ivf_lab/dataset/gt.ibin",
+      "rows": 10000,
+      "dim": 1000,
+      "bytes": 40000008,
+      "sha256": "f7e8e46efa89d420725ebecd2387f837c69c1193a59bc7541350226f4378bdf7"
+    },
+    "centroid_4096.fvecs": {
+      "path": "/Applications/computer_together/openmp_ivf_lab/dataset/centroid_4096.fvecs",
+      "rows": 4096,
+      "dim": 128,
+      "bytes": 2113536,
+      "sha256": "9a655539799b6675e6bd90956ce6e019c585153bf9c1d959b783d9bac5940037"
+    },
+    "cluster_id_4096.ivecs": {
+      "path": "/Applications/computer_together/openmp_ivf_lab/dataset/cluster_id_4096.ivecs",
+      "rows": 1000000,
+      "dim": 1,
+      "bytes": 8000000,
+      "sha256": "b43d82dc642ae852dc5c995c814e424747517df63b229b800d77909ce2c263b9"
+    }
+  },
+  "binary_sha256": "9e2fdc78a1d8c84ec1f59ef8ba791dcf6121862b6b3c71abc2f1071feb255a97",
+  "requested_threads": 4,
+  "queries": 128,
+  "batch": 32,
+  "checks_only": false,
+  "status": "PASS",
+  "note": "Bounded validation; full A-E/perf experiments remain.",
+  "checks": 24,
+  "finished_utc": "2026-11-05T09:27:19.956687+00:00"
+}

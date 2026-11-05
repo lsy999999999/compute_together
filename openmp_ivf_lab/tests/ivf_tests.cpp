@@ -1,5 +1,7 @@
 #include "ivf_search.h"
 
+#include <unistd.h>
+
 #include <algorithm>
 #include <cerrno>
 #include <cmath>
@@ -145,9 +147,7 @@ void test(const fs::path& dir) {
 
 int main() {
     try {
-        const char* home = std::getenv("HOME");
-        if (!home) throw std::runtime_error("HOME must be set for test scratch files");
-        const fs::path scratch = fs::path(home) / "tmp";
+        const fs::path scratch = fs::temp_directory_path();
         fs::create_directories(scratch);
         std::string pattern = (scratch / "ivf_tests_XXXXXX").string();
         char* created = mkdtemp(pattern.data());

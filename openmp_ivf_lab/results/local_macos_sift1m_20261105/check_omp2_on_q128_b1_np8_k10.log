@@ -1,0 +1,3 @@
+["/Applications/computer_together/openmp_ivf_lab/ivf_lab", "--base", "/Applications/computer_together/openmp_ivf_lab/dataset/sift_base.fbin", "--queries-file", "/Applications/computer_together/openmp_ivf_lab/dataset/sift_query.fbin", "--gt", "/Applications/computer_together/openmp_ivf_lab/dataset/gt.ibin", "--centroids", "/Applications/computer_together/openmp_ivf_lab/dataset/centroid_4096.fvecs", "--cluster-ids", "/Applications/computer_together/openmp_ivf_lab/dataset/cluster_id_4096.ivecs", "--only", "omp2", "--simd", "on", "--queries", "128", "--batch", "1", "--nprobe", "8", "--grain", "256", "--k", "10", "--threads", "4", "--mode", "check"]
+N=1000000 dim=128 nlist=4096 strategy=omp2 threads=4 simd=on
+correctness=PASS recall@10=0.726562
